@@ -52,7 +52,7 @@ static void help(void){
 
 
 int main(int argc, char** argv) {
-  int opt,error,index,opt_index, tlu_index;
+  int opt,error,index,opt_index, tlu_index,running;
   const char *devpath, *command;
   bool debug = false;
   char *value_end;
@@ -176,8 +176,10 @@ int main(int argc, char** argv) {
      return 1;
   }
 
+  // device path
   devpath = argv[optind];
 
+  // for debug
   if (debug){
      printf("---------------\n");
      printf("devpath :%s\n",devpath);
@@ -185,9 +187,12 @@ int main(int argc, char** argv) {
      print_tlu_data(tlu_index, tlu_data);  
   }
 
+  
+  if(debug){printf("- now open socket...\n");};
   Socket socket;
   if ((status = socket.open()) != EB_OK) die(status, "etherbone::socket.open");
 
+  if(debug){printf("- now open device...\n");};
   Device device;
   if ((status = device.open(socket, devpath)) != EB_OK) {
     fprintf(stderr, "%s: etherbone::device.open('%s') -- %s\n", program, devpath, eb_status(status));
@@ -195,7 +200,19 @@ int main(int argc, char** argv) {
     return 1;
   }
 
+  if(debug){printf("- now open cycle...\n");};
+  Cycle cycle;
+  if ((status= cycle.open(device))!=EB_OK){
+    die(status, "cycle.open");
+  };
+
+  if(debug){printf("- now close cycle...\n");};
+  cycle.close();
+
+  if(debug){printf("- now close device...\n");};
   device.close();
+
+  if(debug){printf("- now open socket...\n");};
   socket.close();
 }
 
