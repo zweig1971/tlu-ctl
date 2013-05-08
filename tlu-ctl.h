@@ -13,7 +13,7 @@ namespace GSI_TLU {
 using namespace etherbone;
 using namespace std;
 
-#define TM_LATCH 	0x10000
+#define TM_LATCH 	0x100000
 
 #define timestp  	0x000
 #define fifo_clr 	0x004

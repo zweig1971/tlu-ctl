@@ -19,7 +19,7 @@ void print_tlu_data(int tlu_index, struct _tlu_data tlu_data[]){
     printf("[%d].channel :%x\n", index, tlu_data[index].channel);    	
     printf("[%d].register:%x\n", index, tlu_data[index].reg);
     printf("[%d].wr_value:%x\n", index, tlu_data[index].wr_value);
-    printf("[%d].wr_value:%x\n", index, tlu_data[index].rd_value);
+    printf("[%d].rd_value:%x\n", index, tlu_data[index].rd_value);
     printf("[%d].rdwd    :%d\n", index, tlu_data[index].rdwd);
     printf("------------\n");
   }  
@@ -59,6 +59,10 @@ int main(int argc, char** argv) {
   eb_status_t status;
   string test;
   
+  eb_address_t  address;
+  eb_format_t   format = EB_ADDR32|EB_DATA32; 
+  eb_data_t	data;
+
   struct _tlu_data tlu_data[32];
 
   program = argv[0];
@@ -200,18 +204,65 @@ int main(int argc, char** argv) {
     return 1;
   }
 
+
+// ----------- Cycle fuellen -----------
+
+
   if(debug){printf("- now open cycle...\n");};
   Cycle cycle;
   if ((status= cycle.open(device))!=EB_OK){
     die(status, "cycle.open");
   };
 
+
+  cycle.read(0x100000, format, &data);
+
+/*
+
+  index=0;
+  while (index < tlu_index){
+    index++;
+    // lese auftrag
+    if (tlu_data[tlu_index].rdwd){
+      // adresse bauen
+      address = TM_LATCH + tlu_data[tlu_index].reg; 
+      // lese cycle fuellen
+      //cycle.read(address, format, &data);
+      cycle.read(0x100000, format, &data);
+      //debug
+      if(debug){printf("- read [%d]cycle data : -address: %lX -data: %lX\n", index, address, data);};
+      // daten uebernehmen
+      tlu_data[index].rd_value = data;
+    } else { // schreibe auftrag
+       // adresse bauen
+      address = TM_LATCH + tlu_data[tlu_index].reg;
+      // daten uebernehmen
+      data =  tlu_data[index].wr_value;
+      //debug
+      if(debug){printf("- write [%d]cycle data : -adresse: %lX -data: %lX\n", index, address, data);};
+      // schreibe cycle fuellen
+      cycle.write(address, format, data);
+     }
+  }//while  
+
+*/
+
+  printf("data :%x  ---  %d\n", data,data);
+
+
+
+
+  // auftrag beendet
+
+  // cycle schliessen
   if(debug){printf("- now close cycle...\n");};
   cycle.close();
 
+  //device schliessen
   if(debug){printf("- now close device...\n");};
   device.close();
 
+  //socket schliessen
   if(debug){printf("- now open socket...\n");};
   socket.close();
 }
